@@ -1,16 +1,21 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  output: 'standalone',
   images: {
     unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
   },
-  basePath: '/unimodel',
-  assetPrefix: '/unimodel/',
   transpilePackages: ['framer-motion', 'next-themes'],
   trailingSlash: true,
   reactStrictMode: true,
   experimental: {
-    optimizeCss: true
+    optimizeCss: true,
+    appDir: true,
   },
   compiler: {
     removeConsole: true

@@ -6,191 +6,332 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface NewsItem {
   id: string;
   title: string;
-  content: string;
-  image: string;
+  excerpt: string;
   date: string;
-  keywords: string[];
+  category: string;
+  imageUrl: string;
+  url: string;
 }
 
-const mockNews: NewsItem[] = [
-  {
-    id: '1',
-    title: 'GPT-5 Development Rumors',
-    content: 'Industry insiders suggest OpenAI is making significant progress on GPT-5, with breakthrough capabilities in reasoning and multimodal understanding.',
-    image: '/news1.jpg',
-    date: '2024-03-20',
-    keywords: ['GPT-5', 'OpenAI', 'AI Development']
-  },
-  {
-    id: '2',
-    title: 'New Image Generation Model',
-    content: 'A revolutionary image generation model combines the speed of Stable Diffusion with the quality of DALL-E 3.',
-    image: '/news2.jpg',
-    date: '2024-03-19',
-    keywords: ['Image Generation', 'AI Art', 'Machine Learning']
-  }
-];
+interface Alert {
+  id: string;
+  keyword: string;
+  isActive: boolean;
+}
 
 export default function ExploreTab() {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
-  const [keywords, setKeywords] = useState<string[]>([]);
-  const [keywordInput, setKeywordInput] = useState('');
+  const [activeTab, setActiveTab] = useState<'trending' | 'research' | 'announcements'>('trending');
+  const [alerts, setAlerts] = useState<Alert[]>([
+    { id: '1', keyword: 'GPT-5', isActive: true },
+    { id: '2', keyword: 'AI regulation', isActive: true },
+    { id: '3', keyword: 'multimodal', isActive: false },
+  ]);
 
-  const handleAddKeyword = () => {
-    if (keywordInput.trim() && !keywords.includes(keywordInput.trim())) {
-      setKeywords([...keywords, keywordInput.trim()]);
-      setKeywordInput('');
+  const newsItems: Record<string, NewsItem[]> = {
+    trending: [
+      {
+        id: '1',
+        title: 'OpenAI Releases Cutting-Edge GPT-4 Turbo Model',
+        excerpt: 'The newest model features enhanced reasoning capabilities and twice the context length of previous versions.',
+        date: '2 hours ago',
+        category: 'Models',
+        imageUrl: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
+        url: '#'
+      },
+      {
+        id: '2',
+        title: 'AI Researchers Make Breakthrough in Multimodal Learning',
+        excerpt: 'New technique allows for seamless integration of text, image, and audio understanding in a single model.',
+        date: '1 day ago',
+        category: 'Research',
+        imageUrl: 'https://images.unsplash.com/photo-1581092921461-7384ed02359b?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
+        url: '#'
+      },
+      {
+        id: '3',
+        title: 'EU AI Act Adopted: What You Need to Know',
+        excerpt: 'The comprehensive legislation will regulate artificial intelligence based on risk categories.',
+        date: '3 days ago',
+        category: 'Regulation',
+        imageUrl: 'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
+        url: '#'
+      }
+    ],
+    research: [
+      {
+        id: '4',
+        title: 'Training Language Models to Follow Instructions',
+        excerpt: 'Anthropic researchers demonstrate improved results with constitutional AI approach.',
+        date: '5 days ago',
+        category: 'Paper',
+        imageUrl: 'https://images.unsplash.com/photo-1495592822108-9e6261896da8?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
+        url: '#'
+      },
+      {
+        id: '5',
+        title: 'Advancements in Retrieval-Augmented Generation',
+        excerpt: 'New techniques enhance LLM capabilities by efficiently retrieving and using external knowledge.',
+        date: '1 week ago',
+        category: 'Techniques',
+        imageUrl: 'https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
+        url: '#'
+      },
+      {
+        id: '6',
+        title: 'Self-Supervised Learning Breakthroughs',
+        excerpt: 'Researchers propose novel approach for learning without labeled data.',
+        date: '2 weeks ago',
+        category: 'Research',
+        imageUrl: 'https://images.unsplash.com/photo-1517433367423-c7e5b0f35086?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
+        url: '#'
+      }
+    ],
+    announcements: [
+      {
+        id: '7',
+        title: 'UniModel Platform Launch Event',
+        excerpt: 'Join us for the official launch of our new AI platform with special guest speakers.',
+        date: 'Next Wednesday',
+        category: 'Event',
+        imageUrl: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
+        url: '#'
+      },
+      {
+        id: '8',
+        title: 'Premium Plan Early Access',
+        excerpt: 'Sign up for early access to our premium features and get 3 months free.',
+        date: 'Limited time',
+        category: 'Offer',
+        imageUrl: 'https://images.unsplash.com/photo-1607799279861-4dd421887fb3?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
+        url: '#'
+      },
+      {
+        id: '9',
+        title: 'Upcoming Maintenance Schedule',
+        excerpt: 'Platform maintenance will be performed during low-usage hours. See schedule for details.',
+        date: 'This weekend',
+        category: 'Maintenance',
+        imageUrl: 'https://images.unsplash.com/photo-1563770660941-10a8fbc6d0f0?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
+        url: '#'
+      }
+    ]
+  };
+
+  const toggleAlert = (id: string) => {
+    setAlerts(alerts.map(alert => 
+      alert.id === id ? { ...alert, isActive: !alert.isActive } : alert
+    ));
+  };
+
+  const addAlert = () => {
+    const newKeyword = prompt('Enter a keyword to track:');
+    if (newKeyword && newKeyword.trim() !== '') {
+      setAlerts([
+        ...alerts,
+        { id: Date.now().toString(), keyword: newKeyword.trim(), isActive: true }
+      ]);
     }
   };
 
   return (
-    <div className="fixed top-8 right-8 z-40">
-      <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-12 h-12 rounded-full bg-white/80 dark:bg-gray-900/80 shadow-lg backdrop-blur-sm border border-purple-500/20 flex items-center justify-center"
-      >
-        <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-      </motion.button>
-
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ opacity: 0, x: 20, scale: 0.95 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 20, scale: 0.95 }}
-            className="absolute top-16 right-0 w-[400px] bg-white/90 dark:bg-gray-900/90 rounded-2xl shadow-2xl backdrop-blur-sm border border-purple-500/20 p-4"
-          >
-            {/* Keyword Search */}
-            <div className="mb-6">
-              <div className="relative">
-                <input
-                  type="text"
-                  value={keywordInput}
-                  onChange={(e) => setKeywordInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleAddKeyword();
-                    }
-                  }}
-                  placeholder="Add keyword alerts..."
-                  className="w-full p-3 rounded-xl bg-white/50 dark:bg-gray-800/50 border border-purple-500/20 focus:border-purple-500/40 focus:ring-0"
-                />
+    <div className="w-full">
+      <div className="bg-black/40 backdrop-blur-xl rounded-3xl border border-white/10 overflow-hidden shadow-xl shadow-purple-900/20">
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-white/10">
+          <h2 className="text-xl font-medium text-white flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-400" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.476.859h4.002z" />
+            </svg>
+            Explore AI Innovations
+          </h2>
+          <p className="text-white/60 text-sm mt-1">Stay updated with the latest in AI research and developments</p>
+        </div>
+        
+        {/* Tabs */}
+        <div className="px-6 pt-4 border-b border-white/10">
+          <div className="flex gap-1 overflow-x-auto pb-4 no-scrollbar">
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setActiveTab('trending')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+                activeTab === 'trending'
+                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md'
+                  : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+              Trending Now
+            </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setActiveTab('research')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+                activeTab === 'research'
+                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md'
+                  : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              Research Papers
+            </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setActiveTab('announcements')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+                activeTab === 'announcements'
+                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md'
+                  : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+              </svg>
+              Announcements
+            </motion.button>
+          </div>
+        </div>
+        
+        {/* Content */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
+          {/* News Cards */}
+          <div className="md:col-span-2">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: .3 }}
+                className="space-y-6"
+              >
+                {newsItems[activeTab].map((item) => (
+                  <motion.div
+                    key={item.id}
+                    whileHover={{ scale: 1.02 }}
+                    className="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden hover:bg-white/10 transition-all duration-300"
+                  >
+                    <div className="flex flex-col md:flex-row">
+                      <div className="md:w-1/3 h-48 md:h-auto relative overflow-hidden">
+                        <img 
+                          src={item.imageUrl} 
+                          alt={item.title} 
+                          className="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-110" 
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                        <div className="absolute bottom-3 left-3">
+                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm text-white">
+                            {item.category}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="p-5 md:w-2/3 flex flex-col">
+                        <h3 className="text-lg font-medium text-white mb-2">{item.title}</h3>
+                        <p className="text-white/70 text-sm mb-4 flex-grow">{item.excerpt}</p>
+                        <div className="flex justify-between items-center mt-auto">
+                          <span className="text-xs text-white/50">{item.date}</span>
+                          <motion.a
+                            href={item.url}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-white/10 hover:bg-white/20 transition duration-200"
+                          >
+                            Read More
+                          </motion.a>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+          
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Keyword Alerts */}
+            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-5">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-white font-medium">Keyword Alerts</h3>
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleAddKeyword}
-                  className="absolute right-2 top-2 p-1 rounded-lg bg-purple-500 text-white"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={addAlert}
+                  className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center text-white"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                   </svg>
                 </motion.button>
               </div>
-              
-              <div className="flex flex-wrap gap-2 mt-3">
-                {keywords.map((keyword) => (
-                  <motion.span
-                    key={keyword}
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                    className="px-3 py-1 rounded-full bg-purple-500/10 text-purple-500 text-sm flex items-center gap-2"
-                  >
-                    {keyword}
-                    <button
-                      onClick={() => setKeywords(keywords.filter(k => k !== keyword))}
-                      className="hover:text-purple-700"
+              <div className="space-y-2">
+                {alerts.map((alert) => (
+                  <div key={alert.id} className="flex items-center justify-between">
+                    <span className="text-sm text-white/80">#{alert.keyword}</span>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => toggleAlert(alert.id)}
+                      className={`w-10 h-5 rounded-full flex items-center ${
+                        alert.isActive ? 'bg-purple-600' : 'bg-white/20'
+                      } transition-colors duration-300`}
                     >
-                      ×
-                    </button>
-                  </motion.span>
+                      <motion.div
+                        animate={{ x: alert.isActive ? 5 : -5 }}
+                        className={`w-4 h-4 rounded-full bg-white shadow-md transform ${
+                          alert.isActive ? 'translate-x-5' : 'translate-x-1'
+                        }`}
+                      />
+                    </motion.button>
+                  </div>
                 ))}
               </div>
             </div>
-
-            {/* News Grid */}
-            <div className="space-y-4">
-              {mockNews.map((news) => (
-                <motion.button
-                  key={news.id}
-                  whileHover={{ scale: 1.02 }}
-                  onClick={() => setSelectedNews(news)}
-                  className="w-full p-4 rounded-xl bg-gradient-to-r from-purple-500/5 to-indigo-500/5 hover:from-purple-500/10 hover:to-indigo-500/10 border border-purple-500/10 hover:border-purple-500/20 transition-all text-left"
-                >
-                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {news.title}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    {news.date}
-                  </div>
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {news.keywords.map((keyword) => (
-                      <span
-                        key={keyword}
-                        className="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-500 text-xs"
-                      >
-                        {keyword}
-                      </span>
-                    ))}
-                  </div>
-                </motion.button>
-              ))}
-            </div>
-
-            {/* Selected News Modal */}
-            <AnimatePresence>
-              {selectedNews && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
-                  onClick={() => setSelectedNews(null)}
-                >
-                  <motion.div
-                    initial={{ scale: 0.95, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.95, opacity: 0 }}
-                    onClick={(e) => e.stopPropagation()}
-                    className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-2xl w-full mx-4 relative"
+            
+            {/* Popular Topics */}
+            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-5">
+              <h3 className="text-white font-medium mb-4">Popular Topics</h3>
+              <div className="flex flex-wrap gap-2">
+                {['#AGI', '#LLMs', '#ComputerVision', '#AI Safety', '#NeurIPS', '#FineTuning', '#Ethics'].map((topic) => (
+                  <motion.a
+                    key={topic}
+                    href="#"
+                    whileHover={{ scale: 1.05 }}
+                    className="px-3 py-1.5 rounded-lg text-xs bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition duration-200"
                   >
-                    <button
-                      onClick={() => setSelectedNews(null)}
-                      className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                    >
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                    <h2 className="text-xl font-bold mb-2">{selectedNews.title}</h2>
-                    <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                      {selectedNews.date}
-                    </div>
-                    <p className="text-gray-600 dark:text-gray-300">
-                      {selectedNews.content}
-                    </p>
-                    <div className="flex flex-wrap gap-2 mt-4">
-                      {selectedNews.keywords.map((keyword) => (
-                        <span
-                          key={keyword}
-                          className="px-3 py-1 rounded-full bg-purple-500/10 text-purple-500 text-sm"
-                        >
-                          {keyword}
-                        </span>
-                      ))}
-                    </div>
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                    {topic}
+                  </motion.a>
+                ))}
+              </div>
+            </div>
+            
+            {/* Events */}
+            <div className="bg-gradient-to-br from-purple-900/40 to-indigo-900/40 backdrop-blur-sm border border-purple-500/20 rounded-xl p-5">
+              <h3 className="text-white font-medium mb-4">Upcoming Webinar</h3>
+              <p className="text-white/80 text-sm mb-3">Building Reliable AI Systems with Constitutional AI</p>
+              <div className="flex justify-between items-center text-xs text-white/60 mb-4">
+                <span>May 15, 2024</span>
+                <span>1:00 PM EST</span>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full py-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-medium"
+              >
+                Register Now
+              </motion.button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
