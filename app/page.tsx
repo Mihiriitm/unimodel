@@ -1,19 +1,8 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-
-// Dynamically import components with loading fallbacks
-const FloatingOrb = dynamic(() => import('./components/FloatingOrb'), {
-  loading: () => <div className="animate-pulse bg-purple-100 rounded-3xl w-[800px] h-[600px]" />
-});
-
-const ModelSelector = dynamic(() => import('./components/ModelSelector'), {
-  loading: () => <div className="animate-pulse bg-purple-100 rounded-full w-14 h-14" />
-});
-
-const ExploreTab = dynamic(() => import('./components/ExploreTab'), {
-  loading: () => <div className="animate-pulse bg-purple-100 rounded-full w-12 h-12" />
-});
+import FloatingOrb from './components/FloatingOrb';
+import ModelSelector from './components/ModelSelector';
+import ExploreTab from './components/ExploreTab';
 
 export default function Home() {
   return (

@@ -6,7 +6,9 @@ const nextConfig = {
   },
   basePath: '/unimodel',
   assetPrefix: '/unimodel/',
-  trailingSlash: true
+  transpilePackages: ['framer-motion', 'next-themes'],
+  trailingSlash: true,
+  reactStrictMode: false
 }
 
 module.exports = nextConfig; 
