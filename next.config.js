@@ -18,7 +18,7 @@ const nextConfig = {
     appDir: true,
   },
   compiler: {
-    removeConsole: true
+    removeConsole: process.env.NODE_ENV === 'production'
   }
 }
 
