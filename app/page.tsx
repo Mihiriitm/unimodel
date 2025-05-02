@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import FloatingOrb from './components/FloatingOrb';
 import ModelSelector from './components/ModelSelector';
 import ExploreTab from './components/ExploreTab';
@@ -34,14 +35,20 @@ export default function Home() {
 
         {/* Main Content */}
         <div className="pt-24 pb-16 flex justify-center items-center min-h-screen">
-          <FloatingOrb />
+          <Suspense fallback={<div className="animate-pulse bg-purple-100 rounded-3xl w-[800px] h-[600px]" />}>
+            <FloatingOrb />
+          </Suspense>
         </div>
 
         {/* Model Selector */}
-        <ModelSelector />
+        <Suspense fallback={<div className="animate-pulse bg-purple-100 rounded-full w-14 h-14" />}>
+          <ModelSelector />
+        </Suspense>
 
         {/* Explore Tab */}
-        <ExploreTab />
+        <Suspense fallback={<div className="animate-pulse bg-purple-100 rounded-full w-12 h-12" />}>
+          <ExploreTab />
+        </Suspense>
 
         {/* Ad Banner */}
         <div className="fixed bottom-0 left-0 right-0 h-[90px] bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-t border-purple-500/20">

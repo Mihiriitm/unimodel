@@ -8,7 +8,13 @@ const nextConfig = {
   assetPrefix: '/unimodel/',
   transpilePackages: ['framer-motion', 'next-themes'],
   trailingSlash: true,
-  reactStrictMode: false
+  reactStrictMode: true,
+  experimental: {
+    optimizeCss: true
+  },
+  compiler: {
+    removeConsole: true
+  }
 }
 
 module.exports = nextConfig; 
